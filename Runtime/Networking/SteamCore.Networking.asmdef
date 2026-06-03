@@ -1,0 +1,40 @@
+{
+    "name": "SteamCore.Networking",
+    "rootNamespace": "SteamCore.Networking",
+    "references": [
+        "ProjectBase.Common",
+        "ProjectBase.Asset",
+        "ProjectBase.GameFlow",
+        "SteamCore.Steam",
+        "UniTask",
+        "Unity.Addressables",
+        "Mirror",
+        "com.rlabrecque.steamworks.net",
+        "FizzySteamworks"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [
+        {
+            "name": "com.mirror-networking.mirror",
+            "expression": "",
+            "define": "MIRROR"
+        },
+        {
+            "name": "com.rlabrecque.steamworks.net",
+            "expression": "",
+            "define": "STEAMWORKS_NET"
+        },
+        {
+            "name": "com.mirror.steamworks.net",
+            "expression": "",
+            "define": "FIZZY_STEAMWORKS"
+        }
+    ],
+    "noEngineReferences": false
+}

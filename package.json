@@ -1,0 +1,23 @@
+{
+    "name": "com.gmx.top.steamcore",
+    "displayName": "SteamCore",
+    "version": "1.0.0",
+    "unity": "6000.3",
+    "description": "Co-op horror game framework for PC/Steam. Provides Steam integration (Steamworks.NET), Mirror networking, and a bootstrap pipeline built on top of com.gmx.top.core.",
+    "keywords": [
+        "steam",
+        "steamworks",
+        "mirror",
+        "networking",
+        "co-op",
+        "multiplayer",
+        "horror"
+    ],
+    "author": {
+        "name": "GMX Top"
+    },
+    "dependencies": {
+        "com.gmx.top.core": "1.0.0",
+        "com.cysharp.unitask": "2.5.10"
+    }
+}

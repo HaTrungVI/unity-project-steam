@@ -1,0 +1,26 @@
+{
+    "name": "SteamCore.Steam",
+    "rootNamespace": "SteamCore.Steam",
+    "references": [
+        "ProjectBase.Common",
+        "ProjectBase.Data",
+        "ProjectBase.GameFlow",
+        "UniTask",
+        "com.rlabrecque.steamworks.net"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [
+        {
+            "name": "com.rlabrecque.steamworks.net",
+            "expression": "",
+            "define": "STEAMWORKS_NET"
+        }
+    ],
+    "noEngineReferences": false
+}

@@ -1,0 +1,22 @@
+{
+    "name": "SteamCore.Editor",
+    "rootNamespace": "SteamCore.Editor",
+    "references": [
+        "SteamCore.Steam",
+        "SteamCore.Networking",
+        "SteamCore.GameFlow",
+        "ProjectBase.Common",
+        "ProjectBase.GameFlow",
+        "ProjectBase.Data",
+        "UniTask"
+    ],
+    "includePlatforms": ["Editor"],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

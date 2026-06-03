@@ -1,0 +1,23 @@
+{
+    "name": "SteamCore.GameFlow",
+    "rootNamespace": "SteamCore.GameFlow",
+    "references": [
+        "ProjectBase.Common",
+        "ProjectBase.Data",
+        "ProjectBase.GameFlow",
+        "ProjectBase.Asset",
+        "SteamCore.Steam",
+        "SteamCore.Networking",
+        "UniTask",
+        "Unity.Addressables"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
