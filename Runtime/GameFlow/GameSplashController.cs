@@ -25,7 +25,7 @@ namespace SteamCore.GameFlow
             AddTask(new InitializeDataTask(_dataRegistry));
             AddTask(new InitializeNetworkTask(_networkGameManager, _networkObjectPool));
             AddTask(new PreloadAssetsTask(Config.PreloadAssets));
-            AddTask(new LoadSceneTask(Config.MenuScene, LoadSceneMode.Additive, "Loading menu"));
+            AddTask(new LoadSceneTask(Config.MenuScene, LoadSceneMode.Single, "Loading menu"));
         }
 
         protected override void OnProgressUpdated(float normalizedProgress, string taskName)

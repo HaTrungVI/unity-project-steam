@@ -8,6 +8,7 @@ namespace SteamCore.Networking
         bool IsClient { get; }
         bool IsServer { get; }
         bool IsOnline { get; }
+        bool IsSteamTransport { get; }
         int ConnectedPlayerCount { get; }
 
         void Initialize(ISteamAuth authService, ISteamLobby lobbyService);

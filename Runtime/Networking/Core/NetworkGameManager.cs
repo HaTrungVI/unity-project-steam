@@ -22,33 +22,72 @@ namespace SteamCore.Networking
         public bool IsClient => NetworkClient.isConnected && !NetworkServer.active;
         public bool IsServer => NetworkServer.active;
         public bool IsOnline => NetworkClient.isConnected;
+        public bool IsSteamTransport { get; private set; }
         public int ConnectedPlayerCount => _connectionTracker.Count;
         public NetworkConnectionTracker ConnectionTracker => _connectionTracker;
 
         public override void Awake()
         {
-            if (transport == null)
-                SetupTransport();
+            SetupTransport();
             base.Awake();
         }
 
         private void SetupTransport()
         {
+            var forceKcp = _networkConfig != null && _networkConfig.ForceKcpTransport;
+
 #if FIZZY_STEAMWORKS
-            var steamTransport = GetComponent<Mirror.FizzySteam.FizzySteamworks>();
-            if (steamTransport == null)
-                steamTransport = gameObject.AddComponent<Mirror.FizzySteam.FizzySteamworks>();
-            transport = steamTransport;
-            if (_transportSetup != null)
-                _transportSetup.Configure();
-            Debug.Log("[NetworkGameManager] Using FizzySteamworks transport.");
-#else
-            var kcp = GetComponent<kcp2k.KcpTransport>();
-            if (kcp == null)
-                kcp = gameObject.AddComponent<kcp2k.KcpTransport>();
-            transport = kcp;
-            Debug.Log("[NetworkGameManager] FizzySteamworks not available. Using KCP transport.");
+            if (!forceKcp)
+            {
+                var steam = GetComponent<Mirror.FizzySteam.FizzySteamworks>();
+                if (steam == null)
+                    steam = gameObject.AddComponent<Mirror.FizzySteam.FizzySteamworks>();
+                transport = steam;
+                IsSteamTransport = true;
+                if (_transportSetup != null)
+                    _transportSetup.Configure();
+                Debug.Log("[NetworkGameManager] Using FizzySteamworks transport.");
+            }
+            else
 #endif
+            {
+                transport = FindOrCreateKcpTransport();
+                IsSteamTransport = false;
+                Debug.Log("[NetworkGameManager] Using KCP transport.");
+            }
+
+            foreach (var t in GetComponents<Mirror.Transport>())
+            {
+                if (t != transport)
+                    Destroy(t);
+            }
+        }
+
+        private Mirror.Transport FindOrCreateKcpTransport()
+        {
+            System.Type kcpType = null;
+            foreach (var t in GetComponents<Mirror.Transport>())
+            {
+                if (t.GetType().Name == "KcpTransport")
+                    return t;
+                if (kcpType == null && t.GetType().Name == "KcpTransport")
+                    kcpType = t.GetType();
+            }
+
+            if (kcpType == null)
+            {
+                foreach (var asm in System.AppDomain.CurrentDomain.GetAssemblies())
+                {
+                    kcpType = asm.GetType("kcp2k.KcpTransport");
+                    if (kcpType != null) break;
+                }
+            }
+
+            if (kcpType != null)
+                return (Mirror.Transport)gameObject.AddComponent(kcpType);
+
+            Debug.LogError("[NetworkGameManager] KcpTransport not found.");
+            return null;
         }
 
         public void Initialize(ISteamAuth authService, ISteamLobby lobbyService)
@@ -63,6 +102,10 @@ namespace SteamCore.Networking
 
                 if (_networkConfig.PlayerPrefab != null)
                     playerPrefab = _networkConfig.PlayerPrefab;
+
+                if (_networkConfig.GameplayPlayerPrefab != null
+                    && !spawnPrefabs.Contains(_networkConfig.GameplayPlayerPrefab))
+                    spawnPrefabs.Add(_networkConfig.GameplayPlayerPrefab);
 
                 foreach (var prefab in _networkConfig.RegisteredSpawnPrefabs)
                 {
@@ -85,6 +128,8 @@ namespace SteamCore.Networking
 
         public void Disconnect()
         {
+            NetworkPlayerRegistry.Clear();
+
             if (IsHost)
                 StopHost();
             else if (IsClient)
@@ -109,6 +154,7 @@ namespace SteamCore.Networking
         {
             base.OnStopServer();
             _connectionTracker.Clear();
+            NetworkPlayerRegistry.Clear();
             EventBus.Publish(new ServerStoppedEvent());
         }
 
@@ -149,6 +195,7 @@ namespace SteamCore.Networking
 
         public override void OnClientDisconnect()
         {
+            NetworkPlayerRegistry.Clear();
             EventBus.Publish(new LocalClientDisconnectedEvent { Reason = "Connection lost" });
             base.OnClientDisconnect();
         }
@@ -156,7 +203,44 @@ namespace SteamCore.Networking
         public override void OnServerSceneChanged(string sceneName)
         {
             base.OnServerSceneChanged(sceneName);
+
+            var gameplayPrefab = _networkConfig != null ? _networkConfig.GameplayPlayerPrefab : null;
+            if (gameplayPrefab != null)
+                ReplaceAllPlayersWithGameplay(gameplayPrefab);
+
             EventBus.Publish(new NetworkSceneChangeCompletedEvent { SceneName = sceneName });
+        }
+
+        private void ReplaceAllPlayersWithGameplay(GameObject gameplayPrefab)
+        {
+            var connections = new System.Collections.Generic.List<NetworkConnectionToClient>();
+            foreach (var conn in NetworkServer.connections.Values)
+            {
+                if (conn?.identity != null)
+                    connections.Add(conn);
+            }
+
+            var spawnIndex = 0;
+            foreach (var conn in connections)
+            {
+                var oldPlayer = conn.identity.gameObject;
+                var pos = GetStartPosition(spawnIndex++);
+                var newPlayer = Instantiate(gameplayPrefab, pos.position, pos.rotation);
+
+                NetworkServer.ReplacePlayerForConnection(conn, newPlayer);
+                NetworkServer.Destroy(oldPlayer);
+            }
+        }
+
+        private static (Vector3 position, Quaternion rotation) GetStartPosition(int index)
+        {
+            var positions = startPositions;
+            if (positions != null && positions.Count > 0)
+            {
+                var t = positions[index % positions.Count];
+                return (t.position, t.rotation);
+            }
+            return (Vector3.zero, Quaternion.identity);
         }
 
         private void OnAuthTicketReceived(NetworkConnectionToClient conn, AuthTicketMessage msg)
@@ -249,6 +333,7 @@ namespace SteamCore.Networking
         public bool IsClient => false;
         public bool IsServer => false;
         public bool IsOnline => false;
+        public bool IsSteamTransport => false;
         public int ConnectedPlayerCount => 0;
 
         public void Initialize(ISteamAuth authService, ISteamLobby lobbyService) { }
